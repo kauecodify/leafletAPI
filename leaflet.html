@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+
+        #cadastro {
+            display: none;
+        }
+
+        #locais {
+            margin-top: 20px;
+        }
+
+        .local {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        .local img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .avaliacao {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <div id="cadastro">
+        <h2>Cadastro de Local</h2>
+        <form id="formCadastro">
+            <label for="nomeLocal">Nome do Local:</label>
+            <input type="text" id="nomeLocal" required><br>
+            <label for="latitude">Latitude:</label>
+            <input type="text" id="latitude" readonly><br>
+            <label for="longitude">Longitude:</label>
+            <input type="text" id="longitude" readonly><br>
+            <label for="fotoLocal">Foto do Local:</label>
+            <input type="file" id="fotoLocal" accept="image/*" required><br>
+            <button type="button" onclick="confirmarCadastro()">Confirmar Cadastro</button>
+        </form>
+    </div>
+
+    <div id="locais">
+    </div>
+
+    <script>
+        var locais = [];
+
+        var map = L.map('map').setView([51.505, -0.09], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        map.on('click', function(e) {
+            document.getElementById('cadastro').style.display = 'block';
+            document.getElementById('latitude').value = e.latlng.lat;
+            document.getElementById('longitude').value = e.latlng.lng;
+        });
+
+        document.getElementById('formCadastro').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var nomeLocal = document.getElementById('nomeLocal').value;
+            var latitude = document.getElementById('latitude').value;
+            var longitude = document.getElementById('longitude').value;
+            var fotoLocal = document.getElementById('fotoLocal').files[0];
+            
+            locais.push({
+                nome: nomeLocal,
+                latitude: latitude,
+                longitude: longitude,
+                foto: URL.createObjectURL(fotoLocal),
+                avaliacoes: []
+            });
+
+
+            atualizarListaLocais();
+
+            document.getElementById('cadastro').style.display = 'none';
+            document.getElementById('formCadastro').reset();
+        });
+
+        function atualizarListaLocais() {
+            var listaLocaisHTML = '';
+            for (var i = 0; i < locais.length; i++) {
+                listaLocaisHTML += '<div class="local">';
+                listaLocaisHTML += '<h3>' + locais[i].nome + '</h3>';
+                listaLocaisHTML += '<p>Latitude: ' + locais[i].latitude + '</p>';
+                listaLocaisHTML += '<p>Longitude: ' + locais[i].longitude + '</p>';
+                listaLocaisHTML += '<img src="' + locais[i].foto + '" alt="' + locais[i].nome + '">';
+                listaLocaisHTML += '<div class="avaliacao">Avaliações:</div>';
+                listaLocaisHTML += '</div>';
+            }
+            document.getElementById('locais').innerHTML = listaLocaisHTML;
+        }
+
+        function confirmarCadastro() {
+            if (confirm("Tem certeza que deseja cadastrar este local?")) {
+                document.getElementById('formCadastro').submit();
+            }
+        }
+    </script>
+</body>
+</html>
